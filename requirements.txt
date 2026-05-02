@@ -1,4 +1,2 @@
 Django>=4.0,<5.0
 gunicorn
-
-# dckr_pat_fHB24OPB84YvxyOw273tyIvuXU4
