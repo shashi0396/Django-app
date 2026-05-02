@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: django
-        image: sun113/django-cicd-demo
+        image: sun113/django-app:latest
         ports:
         - containerPort: 8000
         env:

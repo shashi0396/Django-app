@@ -46,6 +46,16 @@ pipeline {
                 docker run -d --name $CONTAINER -p 8000:8000 $IMAGE_NAME:$IMAGE_TAG
             '''
           }
-        }  
+        }
+        stage ('Deploy to Kubernetes') {
+          steps {
+            sh '''
+                echo "Deploying to Kubernetes..."
+                echo "Updating Kubernetes deployment with new image..."
+                kubectl apply -f k8s/
+                kubectl set image deployment/django-deployment django=$IMAGE_NAME:$IMAGE_TAG
+            '''
+          }
+        }
     }
 }
