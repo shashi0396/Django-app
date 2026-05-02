@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "sun113/django-app"
         IMAGE_TAG = "latest"
+        CONTAINER = "django-container"
     }
     stages {
         stage(checkout) {
@@ -28,5 +29,22 @@ pipeline {
                 }
             }
         }
+        stage ('Deploy to EC2')
+          steps {
+            sh '''
+                echo "Deploying to EC2..."
+                echo "Pulling latest image from Docker Hub..."
+                docker pull $IMAGE_NAME:$IMAGE_TAG
+
+                echo "Stopping existing container (if any)..."
+                docker stop $CONTAINER || true
+
+                echo "Removing existing container (if any)..."
+                docker rm $CONTAINER || true
+
+                echo "Running new container..."
+                docker run -d --name $CONTAINER -p 8000:8000 $IMAGE_NAME:$IMAGE_TAG
+            '''
+          }
     }
 }
