@@ -29,7 +29,7 @@ pipeline {
                 }
             }
         }
-        stage ('Deploy to EC2')
+        stage ('Deploy to EC2') {
           steps {
             sh '''
                 echo "Deploying to EC2..."
@@ -46,5 +46,6 @@ pipeline {
                 docker run -d --name $CONTAINER -p 8000:8000 $IMAGE_NAME:$IMAGE_TAG
             '''
           }
+        }  
     }
 }
