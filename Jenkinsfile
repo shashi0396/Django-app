@@ -2,63 +2,31 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "sun113/django-cicd-demo"
-        IMAGE_TAG  = "latest"
-        CONTAINER  = "django-demo-app"
-        APP_PORT   = "8000"
+        IMAGE_NAME = "sun113/django-app"
+        IMAGE_TAG = "latest"
     }
-
     stages {
-
-        stage('Checkout') {
+        stage(checkout) {
             steps {
                 checkout scm
             }
         }
-
-        stage('Build Docker Image') {
+        stage ('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
             }
         }
-
-        stage('Push to Docker Hub') {
+        stage ('Push To Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
-                )]) {
+                    )]) {
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker push $IMAGE_NAME'
+                    sh "docker push $IMAGE_NAME:$IMAGE_TAG" 
                 }
             }
         }
-
-        stage('Deploy on EC2') {
-            steps {
-                sh '''
-                    echo "Pulling latest image..."
-                    docker pull $IMAGE_NAME:$IMAGE_TAG
-
-                    echo "Stopping old container if exists..."
-                    docker stop $CONTAINER || true
-                    
-                    echo "Removing old container if exists..."
-                    docker rm $CONTAINER || true
-
-                    echo "Starting new container..."
-                    docker run -d --name $CONTAINER -p $APP_PORT:$APP_PORT $IMAGE_NAME:$IMAGE_TAG
-                '''
-            }
-
-
-        }
-
-        // stage('Deploy to Kubernetes') {
-        //     steps {
-        //         sh 'kubectl apply -f k8s/'
-        //     }
-        // }
     }
 }
