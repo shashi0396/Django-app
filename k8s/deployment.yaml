@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: django
-        image: your-dockerhub-username/django-cicd-demo
+        image: sun113/django-cicd-demo
         ports:
         - containerPort: 8000
         env:
