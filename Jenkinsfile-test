@@ -27,9 +27,16 @@ pipeline {
                 }
             }
         }
-        stage("Deploy Docker containers"){
+        stage("Deploy Docker containers To EC2"){
             steps {
-                echo "Deploying docker containers using docker-compose"
+                sh '''
+                    echo "Deploying Docker containers to EC2 instance"
+                    echo "Pulling Docker image from Docker Hub"
+                    sh "docker pull $IMAGE_NAME:$IMAGE_TAG"
+
+                    echo "Running Docker container on EC2 instance"
+                    sh "docker run -d -p 8000:8000 $IMAGE_NAME:$IMAGE_TAG"
+                '''
             }
         }
     }
