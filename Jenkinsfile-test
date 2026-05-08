@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "sun113/microdegree"
         IMAGE_TAG = "latest"
+        CONTAINER_NAME = "microdegree-container"
     }
 
     stages {
@@ -29,12 +30,19 @@ pipeline {
             }
         }
         stage("Deploy Docker containers To EC2"){
+            input {
+                message "Deploying Docker container to EC2 instance. Please confirm to proceed."
+                ok "Deploy"
+            }
             steps {
                 sh '''
                     docker pull $IMAGE_NAME:$IMAGE_TAG
 
+                    docker stop $CONTAINER_NAME || true
+                    docker rm $CONTAINER_NAME || true
+
                     echo "Running Docker container on EC2 instance"
-                    docker run -d -p 8000:8000 $IMAGE_NAME:$IMAGE_TAG
+                    docker run -d -p --name $CONTAINER_NAME 8000:8000 $IMAGE_NAME:$IMAGE_TAG
                 '''
             }
         }
