@@ -28,15 +28,15 @@ pipeline {
                 }
             }
         }
-        // stage("Deploy Docker containers To EC2"){
-        //     steps {
-        //         sh '''
-        //             sh "docker pull $IMAGE_NAME:$IMAGE_TAG"
+        stage("Deploy Docker containers To EC2"){
+            steps {
+                sh '''
+                    docker pull $IMAGE_NAME:$IMAGE_TAG
 
-        //             echo "Running Docker container on EC2 instance"
-        //             sh "docker run -d -p 8000:8000 $IMAGE_NAME:$IMAGE_TAG"
-        //         '''
-        //     }
-        // }
+                    echo "Running Docker container on EC2 instance"
+                    docker run -d -p 8000:8000 $IMAGE_NAME:$IMAGE_TAG
+                '''
+            }
+        }
     }
 }
