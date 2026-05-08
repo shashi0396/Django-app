@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME = "sun113/microdegree"
         IMAGE_TAG = "latest"
         CONTAINER_NAME = "microdegree-container"
+        PORT = "8000"
     }
 
     stages {
@@ -42,7 +43,7 @@ pipeline {
                     docker rm $CONTAINER_NAME || true
 
                     echo "Running Docker container on EC2 instance"
-                    docker run -d -p --name $CONTAINER_NAME 8000:8000 $IMAGE_NAME:$IMAGE_TAG
+                    docker run -d --name $CONTAINER_NAME -p $PORT:$PORT $IMAGE_NAME:$IMAGE_TAG
                 '''
             }
         }
