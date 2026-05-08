@@ -24,20 +24,19 @@ pipeline {
                     sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                     // sh "docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG"
                     sh "docker push $IMAGE_NAME:$IMAGE_TAG"
+                    sh "docker pull $IMAGE_NAME:$IMAGE_TAG"
                 }
             }
         }
-        stage("Deploy Docker containers To EC2"){
-            steps {
-                sh '''
-                    echo "Deploying Docker containers to EC2 instance"
-                    echo "Pulling Docker image from Docker Hub"
-                    sh "docker pull $IMAGE_NAME:$IMAGE_TAG"
+        // stage("Deploy Docker containers To EC2"){
+        //     steps {
+        //         sh '''
+        //             sh "docker pull $IMAGE_NAME:$IMAGE_TAG"
 
-                    echo "Running Docker container on EC2 instance"
-                    sh "docker run -d -p 8000:8000 $IMAGE_NAME:$IMAGE_TAG"
-                '''
-            }
-        }
+        //             echo "Running Docker container on EC2 instance"
+        //             sh "docker run -d -p 8000:8000 $IMAGE_NAME:$IMAGE_TAG"
+        //         '''
+        //     }
+        // }
     }
 }
