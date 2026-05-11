@@ -1,6 +1,10 @@
 pipeline {
-    agent label 'microdegree' // Use a Jenkins agent with Docker installed
-
+    agent {
+        node {
+            label 'microdegree'
+        }
+    }
+    
     environment {
         IMAGE_NAME = "sun113/microdegree"
         IMAGE_TAG = "latest"
