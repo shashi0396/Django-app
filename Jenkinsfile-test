@@ -1,5 +1,5 @@
 pipeline {
-    agent microdegree
+    agent label 'microdegree' // Use a Jenkins agent with Docker installed
 
     environment {
         IMAGE_NAME = "sun113/microdegree"
