@@ -52,7 +52,7 @@ minikube start --driver=docker
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 # Forward the service to localhost
-kubectl port-forward svc/django-service 8000:80 --address 0.0.0.0
+kubectl port-forward svc/django-service 8000:8000 --address 0.0.0.0
 ```
 
 Then open `http://<MINIKUBE-IP>:8000/` or `http://localhost:8000/` if port-forwarding.
@@ -99,6 +99,14 @@ http://<YOUR-EC2-PUBLIC-IP>:8000/hello/
 
 {"message": "Hello from Django CI/CD 🚀 (v1)"}
 
+## IF faced issues with Minkube auth docker image
+
+docker pull 047719618727.dkr.ecr.us-east-1.amazonaws.com/django-cicd-demo:latest
+minikube image load 047719618727.dkr.ecr.us-east-1.amazonaws.com/django-cicd-demo:latest
+      containers:
+      - name: django
+        image: 047719618727.dkr.ecr.us-east-1.amazonaws.com/django-cicd-demo:latest
+        imagePullPolicy: Never   # update this
 
 ## Contributing
 - Open an issue or submit a PR with a clear description and tests.
