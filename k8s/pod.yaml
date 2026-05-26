@@ -1,0 +1,83 @@
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: nginx-demo-v1
+#   namespace: devops
+#   labels:
+#     app: nginx
+# spec:
+#   containers:
+#     - name: nginx
+#       image: nginx:latest
+#       ports:
+#         - containerPort: 80
+
+
+apiVersion: v1
+kind: Deployment
+metadata: 
+  name: demo-deploy-app
+spec:
+  replicas: 2
+  selector:
+    matchlabels:
+      app: nginx 
+  template:
+    metadata:
+      name: nginx
+    spec:
+      - name: nginx
+        image: nginx:latest
+        ports:
+          - containerPort: 80
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: cache-volume
+            mountPath: /cache
+      volumes:
+        - name: cache-volume
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-service-app
+spec:
+  type: ClusterIP
+  selector:
+    app: nginx
+  ports:
+    port: 80
+    targetPort: 80
+    
+---
+apiVersion: v1
+kind: Gateway
+metadata:
+  name: demo-service-app
+spec:
+  gatewayClassName: nginx
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: v1
+kind: HTTPRoute
+metadata:
+  name: demo-service-app
+spec:
+  parentRefs:
+    - name: demo-service-app
+  rules:
+    - matches:
+      - path:
+          type: PathPrefix
+          value: /
+      backendRefs:
+        - name: demo-service-app
+          port: 80
+          weight: 100

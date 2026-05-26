@@ -52,8 +52,8 @@ pipeline {
             sh '''
                 echo "Deploying to Kubernetes..."
                 echo "Updating Kubernetes deployment with new image..."
-                kubectl apply -f k8s/
-                kubectl set image deployment/django-deployment django=$IMAGE_NAME:$IMAGE_TAG
+                sed -i "s|image: .*|image: $IMAGE_NAME:$IMAGE_TAG|g" k8s/deployment.yaml
+                kubectl apply -f k8s/deployment.yaml
             '''
           }
         }
