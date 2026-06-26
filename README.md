@@ -76,6 +76,7 @@ sudo apt install -y docker.io
 sudo usermod -aG docker ubuntu  # needed for minikube
 sudo usermod -aG docker jenkins
 
+
 sudo reboot
 
 ## Install Minikube
@@ -88,6 +89,7 @@ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stabl
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/
 
+sudo usermod -aG docker $USER && newgrp docker
 minikube start --driver=docker
 
 kubectl get nodes
