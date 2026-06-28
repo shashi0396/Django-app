@@ -23,6 +23,30 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                echo "Running SonarQube Static Code Analysis..."
+                // 'SonarQubeServer' must match the name you set in Manage Jenkins -> System
+                withSonarQubeEnv('SonarQubeServer') {
+                    script {
+                        // 'sonar-scanner' must match the name you set in Manage Jenkins -> Tools
+                        def scannerHome = tool 'sonar-scanner'
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
+
+        // OPTIONAL BUT RECOMMENDED: Wait for the SonarQube Quality Gate to pass
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    // Aborts the pipeline if the code doesn't meet your SonarQube quality standards
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
         stage("Build Docker image"){
             steps {
                 echo "Building docker image using Dockerfile"
@@ -30,7 +54,7 @@ pipeline {
             }
         }
 
-        stage("Trivy SCA Scan") {
+        stage("Trivy Image Scan") {
             steps {
                 echo "Running Trivy vulnerability scanner on the Docker image..."
                 // It currently uses the default exit-code 0 (won't fail the build).
