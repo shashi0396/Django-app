@@ -6,7 +6,7 @@ pipeline {
         IMAGE_TAG = "latest"
         CONTAINER_NAME = "microdegree-container"
         PORT = "8000"
-        APP_URL = "http://98.93.142.69:8000/"
+        APP_URL = "http://98.93.142.69:8000/hello/"
     }
 
     stages {
@@ -116,10 +116,12 @@ pipeline {
         stage("DAST with OWASP ZAP") {
             steps {
                 echo "Running OWASP ZAP Dynamic Application Security Testing..."
-                // We use the official ZAP docker image to run a baseline scan against the deployed app.
-                // It mounts the current Jenkins workspace so the HTML report is saved locally.
                 sh '''
-                    docker run --rm -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+
+                    mkdir -p zap_reports
+                    chmod 777 zap_reports
+
+                    docker run --rm -v $(pwd)/zap_reports:/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
                     -t $APP_URL \
                     -r zap_report.html \
                     || true
@@ -128,7 +130,7 @@ pipeline {
             post {
                 always {
                     // Archive the DAST HTML report so it can be viewed in the Jenkins UI
-                    archiveArtifacts artifacts: 'zap_report.html', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'zap_reports/zap_report.html', allowEmptyArchive: true
                 }
             }
         }
