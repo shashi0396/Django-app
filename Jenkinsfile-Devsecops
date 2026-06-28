@@ -54,6 +54,20 @@ pipeline {
             }
         }
 
+        stage('Cosign Image Signing') {
+            steps {
+                echo "Signing the pushed OCI image using Cosign..."
+                // secure retrieval of the private key file and passphrase from Jenkins credentials provider
+                withCredentials([
+                    file(credentialsId: 'cosign-private-key', variable: 'COSIGN_KEY'),
+                    string(credentialsId: 'cosign-passphrase', variable: 'COSIGN_PASSWORD')
+                ]) {
+                    // Cosign automatically uses the COSIGN_PASSWORD environment variable to decrypt the key
+                    sh 'cosign sign --key $COSIGN_KEY $IMAGE_NAME:$IMAGE_TAG'
+                }
+            }
+        }
+
         stage("Deploy Docker containers To Production"){
             input {
                 message "Deploying Docker container to EC2."
