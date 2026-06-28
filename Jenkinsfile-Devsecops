@@ -2,8 +2,7 @@ pipeline {
     agent any 
     
     environment {
-        // IMAGE_NAME = "sun113/microdegree"
-        IMAGE_NAME = "047719618727.dkr.ecr.us-east-1.amazonaws.com/ "
+        IMAGE_NAME = "047719618727.dkr.ecr.us-east-1.amazonaws.com/devsecops"
         IMAGE_TAG = "latest"
         CONTAINER_NAME = "microdegree-container"
         PORT = "8000"
@@ -15,10 +14,28 @@ pipeline {
                 echo "Checking out code from git repository"
             }
         }
-        stage("building docker image"){
+
+        stage("SCA-Trivy") {
+            steps {
+                echo "Running Trivy to scan source code and dependencies..."
+                // Scans the current workspace directory ('.') for HIGH and CRITICAL vulnerabilities.
+                sh "trivy fs --severity HIGH,CRITICAL ."
+            }
+        }
+
+        stage("Build Docker image"){
             steps {
                 echo "Building docker image using Dockerfile"
                 sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
+            }
+        }
+
+        stage("Trivy SCA Scan") {
+            steps {
+                echo "Running Trivy vulnerability scanner on the Docker image..."
+                // It currently uses the default exit-code 0 (won't fail the build).
+                // Change to '--exit-code 1' if you want the pipeline to abort on failure.
+                sh "trivy image --severity HIGH,CRITICAL $IMAGE_NAME:$IMAGE_TAG"
             }
         }
 
@@ -52,11 +69,6 @@ pipeline {
                     echo "Running Docker container on EC2 instance"
                     docker run -d --name $CONTAINER_NAME -p $PORT:$PORT $IMAGE_NAME:$IMAGE_TAG
                 '''
-            }
-        }
-        stage ("testing webhook"){
-            steps {
-                echo "Testing webhook - if webhook is working, this stage will be executed after pushing code automatically"
             }
         }
     }
