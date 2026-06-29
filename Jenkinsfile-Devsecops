@@ -6,7 +6,7 @@ pipeline {
         IMAGE_TAG = "latest"
         CONTAINER_NAME = "microdegree-container"
         PORT = "8000"
-        APP_URL = "http://98.93.142.69:8000/hello/"
+        APP_URL = "http://3.85.113.198:8000/hello/"
     }
 
     stages {
