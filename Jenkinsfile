@@ -41,6 +41,10 @@ pipeline {
         }
 
         stage ('Deploy to EC2') {
+          input {
+            message "Deploying Docker container to EC2."
+            ok "Deploy"
+          }
           steps {
             sh '''
                 echo "Deploying to EC2..."
