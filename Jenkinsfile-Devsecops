@@ -1,6 +1,8 @@
 pipeline {
     agent any 
     
+
+
     environment {
         IMAGE_NAME = "047719618727.dkr.ecr.us-east-1.amazonaws.com/devsecops"
         IMAGE_TAG = "latest"
@@ -25,6 +27,7 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
+            when branch {"feature/*"}
             steps {
                 echo "Running SonarQube Static Code Analysis..."
                 // 'SonarQubeServer' must match the name you set in Manage Jenkins -> System
