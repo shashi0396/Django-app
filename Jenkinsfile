@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "sun113/django-app"
+        // IMAGE_NAME = "sun113/django-app"
+        IMAGE_NAME = "047719618727.dkr.ecr.us-east-1.amazonaws.com/md-dj-demo"
         IMAGE_TAG = "latest"
         CONTAINER = "django-container"
     }
@@ -17,18 +18,26 @@ pipeline {
                 sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
             }
         }
-        stage ('Push To Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                    )]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh "docker push $IMAGE_NAME:$IMAGE_TAG" 
-                }
-            }
+        // stage ('Push To Docker Hub') {
+        //     steps {
+        //         withCredentials([usernamePassword(
+        //             credentialsId: 'dockerhub-creds',
+        //             usernameVariable: 'DOCKER_USER',
+        //             passwordVariable: 'DOCKER_PASS'
+        //             )]) {
+        //             sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+        //             sh "docker push $IMAGE_NAME:$IMAGE_TAG" 
+        //         }
+        //     }
+        // }
+
+        stage ('Push to aws-ECR'){
+            sh '''
+                aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 047719618727.dkr.ecr.us-east-1.amazonaws.com
+                docker push $IMAGE_NAME:$IMAGE_TAG
+            '''
         }
+
         stage ('Deploy to EC2') {
           steps {
             sh '''
@@ -47,15 +56,15 @@ pipeline {
             '''
           }
         }
-        stage ('Deploy to Kubernetes') {
-          steps {
-            sh '''
-                echo "Deploying to Kubernetes..."
-                echo "Updating Kubernetes deployment with new image..."
-                sed -i "s|image: .*|image: $IMAGE_NAME:$IMAGE_TAG|g" k8s/deployment.yaml
-                kubectl apply -f k8s/deployment.yaml
-            '''
-          }
-        }
+        // stage ('Deploy to Kubernetes') {
+        //   steps {
+        //     sh '''
+        //         echo "Deploying to Kubernetes..."
+        //         echo "Updating Kubernetes deployment with new image..."
+        //         sed -i "s|image: .*|image: $IMAGE_NAME:$IMAGE_TAG|g" k8s/deployment.yaml
+        //         kubectl apply -f k8s/deployment.yaml
+        //     '''
+        //   }
+        // }
     }
 }

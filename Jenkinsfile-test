@@ -1,0 +1,22 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('checkout scm'){
+            sh' checkoout scm'
+        }
+
+        stage ('docker build'){
+            sh 'docker build -t demo-django-app:latest .' 
+        }
+
+        stage ('docker push to ECR') {
+            sh 'docker push demo-django-app:latest'
+        }
+
+        stage (' deploy containers') {
+            sh 'docker run -d -p 8000:8000 demo-django-app:latest'
+        }
+    }
+
+}
