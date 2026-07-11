@@ -32,10 +32,12 @@ pipeline {
         // }
 
         stage ('Push to aws-ECR'){
-            sh '''
-                aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 047719618727.dkr.ecr.us-east-1.amazonaws.com
-                docker push $IMAGE_NAME:$IMAGE_TAG
-            '''
+            steps {
+                sh '''
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 047719618727.dkr.ecr.us-east-1.amazonaws.com
+                    docker push $IMAGE_NAME:$IMAGE_TAG
+                '''
+            }
         }
 
         stage ('Deploy to EC2') {
