@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to push the updated deployment.yaml')
+    }
+
+    environment {
+        IMAGE_NAME = "sun113/django-app"
+        // IMAGE_NAME = "047719618727.dkr.ecr.us-east-1.amazonaws.com/md-dj-demo"
+        IMAGE_TAG = "latest"
+        CONTAINER = "django-container"
+        PORT = "8000"
+        APP_NAME = "multi-container-app"
+    }
+    
+    stages {
+        stage(checkout) {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage ('Build Docker Image') {
+            steps {
+                sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
+            }
+        }
+
+        stage ('Push To Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',usernameVariable: 'DOCKER_USER',passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh "docker push $IMAGE_NAME:$IMAGE_TAG" 
+                }
+            }
+        }
+        stage ("create image tag & push it to git branch") {
+            sh '''
+                git config --global user.email "
+                git config --global user.name "Jenkins"
+                echo $IMAGE_TAG
+                sed -i "s/IMAGE_TAG=.*/IMAGE_TAG=$IMAGE_TAG/" k8s-manifests/deployment.yaml
+                git add k8s-manifests/deployment.yaml
+                git commit -m "Update IMAGE_TAG to $IMAGE_TAG"
+                git push origin HEAD:$BRANCH_NAME
+            '''
+            }
+        }
+    }
+}

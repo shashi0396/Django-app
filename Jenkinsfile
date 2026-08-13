@@ -7,6 +7,7 @@ pipeline {
         IMAGE_TAG = "latest"
         CONTAINER = "django-container"
         PORT = "8000"
+        APP_NAME = "multi-container-app"
     }
     
     stages {

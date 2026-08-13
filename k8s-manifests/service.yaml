@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-service
+spec:
+  type: ClusterIP
+  selector:
+    app: django
+  ports:
+    - port: 8000 # external port of the service or Host port 
+      targetPort: 8000 #Container port of the django container
+
+docker run -p 8000:8000 django:latest
+docker run -p <HostPort>:<ContainerPort> <ImageName>:<Tag>
