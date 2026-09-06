@@ -15,7 +15,6 @@ pipeline {
                 echo "Checking out code from git repository"
             }
         }
-    }
 
 //         stage("SCA-Trivy") {
 //             steps {
@@ -135,4 +134,5 @@ pipeline {
 //             }
 //         }
     // }
+}
 }
