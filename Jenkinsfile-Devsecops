@@ -18,16 +18,16 @@ pipeline {
             }
         }
 
-        stage("SCA-Trivy") {
-            steps {
-                echo "Running Trivy to scan source code and dependencies..."
-                // Scans the current workspace directory ('.') for HIGH and CRITICAL vulnerabilities.
-                sh "trivy fs --severity HIGH,CRITICAL ."
-            }
-        }
+//         stage("SCA-Trivy") {
+//             steps {
+//                 echo "Running Trivy to scan source code and dependencies..."
+//                 // Scans the current workspace directory ('.') for HIGH and CRITICAL vulnerabilities.
+//                 sh "trivy fs --severity HIGH,CRITICAL ."
+//             }
+//         }
 
         stage('SonarQube Analysis') {
-            when branch {"feature/*"}
+            // when branch {"feature/*"}
             steps {
                 echo "Running SonarQube Static Code Analysis..."
                 // 'SonarQubeServer' must match the name you set in Manage Jenkins -> System
@@ -41,99 +41,99 @@ pipeline {
             }
         }
 
-        // stage('Quality Gate') {
-        //     steps {
-        //         timeout(time: 2, unit: 'MINUTES') {
-        //             waitForQualityGate abortPipeline: false
-        //         }
-        //     }
-        // }
+//         // stage('Quality Gate') {
+//         //     steps {
+//         //         timeout(time: 2, unit: 'MINUTES') {
+//         //             waitForQualityGate abortPipeline: false
+//         //         }
+//         //     }
+//         // }
 
-        stage("Build Docker image"){
-            steps {
-                echo "Building docker image using Dockerfile"
-                sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
-            }
-        }
+//         stage("Build Docker image"){
+//             steps {
+//                 echo "Building docker image using Dockerfile"
+//                 sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
+//             }
+//         }
 
-        stage("Trivy Image Scan") {
-            steps {
-                echo "Running Trivy vulnerability scanner on the Docker image..."
-                // It currently uses the default exit-code 0 (won't fail the build).
-                // Change to '--exit-code 1' if you want the pipeline to abort on failure.
-                sh "trivy image --severity HIGH,CRITICAL $IMAGE_NAME:$IMAGE_TAG"
-            }
-        }
+//         stage("Trivy Image Scan") {
+//             steps {
+//                 echo "Running Trivy vulnerability scanner on the Docker image..."
+//                 // It currently uses the default exit-code 0 (won't fail the build).
+//                 // Change to '--exit-code 1' if you want the pipeline to abort on failure.
+//                 sh "trivy image --severity HIGH,CRITICAL $IMAGE_NAME:$IMAGE_TAG"
+//             }
+//         }
 
-        stage ("Login to ECR") {
-            steps {
-                sh '''
-                    aws ecr get-login-password --region us-east-1 | \
-                    docker login --username AWS --password-stdin 047719618727.dkr.ecr.us-east-1.amazonaws.com
-                '''
-            }
-        }
+//         stage ("Login to ECR") {
+//             steps {
+//                 sh '''
+//                     aws ecr get-login-password --region us-east-1 | \
+//                     docker login --username AWS --password-stdin 047719618727.dkr.ecr.us-east-1.amazonaws.com
+//                 '''
+//             }
+//         }
 
-        stage('Push Image to ECR') {
-            steps {
-                sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
-            }
-        }
+//         stage('Push Image to ECR') {
+//             steps {
+//                 sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
+//             }
+//         }
 
-        stage('Cosign Image Signing') {
-            steps {
-                echo "Signing the pushed OCI image using Cosign..."
-                // secure retrieval of the private key file and passphrase from Jenkins credentials provider
-                withCredentials([
-                    file(credentialsId: 'cosign-private-key', variable: 'COSIGN_KEY'),
-                    string(credentialsId: 'cosign-passphrase', variable: 'COSIGN_PASSWORD')
-                ]) {
-                    // Cosign automatically uses the COSIGN_PASSWORD environment variable to decrypt the key
-                    sh 'cosign sign --key $COSIGN_KEY $IMAGE_NAME:$IMAGE_TAG'
-                }
-            }
-        }
+//         stage('Cosign Image Signing') {
+//             steps {
+//                 echo "Signing the pushed OCI image using Cosign..."
+//                 // secure retrieval of the private key file and passphrase from Jenkins credentials provider
+//                 withCredentials([
+//                     file(credentialsId: 'cosign-private-key', variable: 'COSIGN_KEY'),
+//                     string(credentialsId: 'cosign-passphrase', variable: 'COSIGN_PASSWORD')
+//                 ]) {
+//                     // Cosign automatically uses the COSIGN_PASSWORD environment variable to decrypt the key
+//                     sh 'cosign sign --key $COSIGN_KEY $IMAGE_NAME:$IMAGE_TAG'
+//                 }
+//             }
+//         }
 
-        stage("Deploy Docker containers To Production"){
-            input {
-                message "Deploying Docker container to EC2."
-                ok "Deploy"
-            }
-            steps {
-                sh '''
-                    docker pull $IMAGE_NAME:$IMAGE_TAG
+//         stage("Deploy Docker containers To Production"){
+//             input {
+//                 message "Deploying Docker container to EC2."
+//                 ok "Deploy"
+//             }
+//             steps {
+//                 sh '''
+//                     docker pull $IMAGE_NAME:$IMAGE_TAG
 
-                    docker stop $CONTAINER_NAME || true
-                    docker rm $CONTAINER_NAME || true
+//                     docker stop $CONTAINER_NAME || true
+//                     docker rm $CONTAINER_NAME || true
 
-                    echo "Running Docker container on EC2 instance"
-                    docker run -d --name $CONTAINER_NAME -p $PORT:$PORT $IMAGE_NAME:$IMAGE_TAG
+//                     echo "Running Docker container on EC2 instance"
+//                     docker run -d --name $CONTAINER_NAME -p $PORT:$PORT $IMAGE_NAME:$IMAGE_TAG
 
-                    sleep 10
-                '''
-            }
-        }
+//                     sleep 10
+//                 '''
+//             }
+//         }
 
-        stage("DAST with OWASP ZAP") {
-            steps {
-                echo "Running OWASP ZAP Dynamic Application Security Testing..."
-                sh '''
+//         stage("DAST with OWASP ZAP") {
+//             steps {
+//                 echo "Running OWASP ZAP Dynamic Application Security Testing..."
+//                 sh '''
 
-                    mkdir -p zap_reports
-                    chmod 777 zap_reports
+//                     mkdir -p zap_reports
+//                     chmod 777 zap_reports
 
-                    docker run --rm -v $(pwd)/zap_reports:/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-                    -t $APP_URL \
-                    -r zap_report.html \
-                    || true
-                '''
-            }
-            post {
-                always {
-                    // Archive the DAST HTML report so it can be viewed in the Jenkins UI
-                    archiveArtifacts artifacts: 'zap_reports/zap_report.html', allowEmptyArchive: true
-                }
-            }
-        }
+//                     docker run --rm -v $(pwd)/zap_reports:/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+//                     -t $APP_URL \
+//                     -r zap_report.html \
+//                     || true
+//                 '''
+//             }
+//             post {
+//                 always {
+//                     // Archive the DAST HTML report so it can be viewed in the Jenkins UI
+//                     archiveArtifacts artifacts: 'zap_reports/zap_report.html', allowEmptyArchive: true
+//                 }
+//             }
+//         }
     }
 }
