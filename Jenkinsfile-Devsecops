@@ -1,8 +1,6 @@
 pipeline {
     agent any 
     
-
-
     environment {
         IMAGE_NAME = "047719618727.dkr.ecr.us-east-1.amazonaws.com/devsecops"
         IMAGE_TAG = "latest"
@@ -17,6 +15,7 @@ pipeline {
                 echo "Checking out code from git repository"
             }
         }
+    }
 
 //         stage("SCA-Trivy") {
 //             steps {
@@ -135,5 +134,5 @@ pipeline {
 //                 }
 //             }
 //         }
-    }
+    // }
 }
