@@ -16,13 +16,13 @@ pipeline {
             }
         }
 
-//         stage("SCA-Trivy") {
-//             steps {
-//                 echo "Running Trivy to scan source code and dependencies..."
-//                 // Scans the current workspace directory ('.') for HIGH and CRITICAL vulnerabilities.
-//                 sh "trivy fs --severity HIGH,CRITICAL ."
-//             }
-//         }
+        stage("SCA-Trivy") {
+            steps {
+                echo "Running Trivy to scan source code and dependencies..."
+                // Scans the current workspace directory ('.') for HIGH and CRITICAL vulnerabilities.
+                sh "trivy fs --severity HIGH,CRITICAL ."
+            }
+        }
 
         stage('SonarQube Analysis') {
             // when branch {"feature/*"}
@@ -54,43 +54,43 @@ pipeline {
 //             }
 //         }
 
-//         stage("Trivy Image Scan") {
-//             steps {
-//                 echo "Running Trivy vulnerability scanner on the Docker image..."
-//                 // It currently uses the default exit-code 0 (won't fail the build).
-//                 // Change to '--exit-code 1' if you want the pipeline to abort on failure.
-//                 sh "trivy image --severity HIGH,CRITICAL $IMAGE_NAME:$IMAGE_TAG"
-//             }
-//         }
+        stage("Trivy Image Scan") {
+            steps {
+                echo "Running Trivy vulnerability scanner on the Docker image..."
+                // It currently uses the default exit-code 0 (won't fail the build).
+                // Change to '--exit-code 1' if you want the pipeline to abort on failure.
+                sh "trivy image --severity HIGH,CRITICAL $IMAGE_NAME:$IMAGE_TAG"
+            }
+        }
 
-//         stage ("Login to ECR") {
-//             steps {
-//                 sh '''
-//                     aws ecr get-login-password --region us-east-1 | \
-//                     docker login --username AWS --password-stdin 047719618727.dkr.ecr.us-east-1.amazonaws.com
-//                 '''
-//             }
-//         }
+        stage ("Login to ECR") {
+            steps {
+                sh '''
+                    aws ecr get-login-password --region us-east-1 | \
+                    docker login --username AWS --password-stdin 047719618727.dkr.ecr.us-east-1.amazonaws.com
+                '''
+            }
+        }
 
-//         stage('Push Image to ECR') {
-//             steps {
-//                 sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
-//             }
-//         }
+        stage('Push Image to ECR') {
+            steps {
+                sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
+            }
+        }
 
-//         stage('Cosign Image Signing') {
-//             steps {
-//                 echo "Signing the pushed OCI image using Cosign..."
-//                 // secure retrieval of the private key file and passphrase from Jenkins credentials provider
-//                 withCredentials([
-//                     file(credentialsId: 'cosign-private-key', variable: 'COSIGN_KEY'),
-//                     string(credentialsId: 'cosign-passphrase', variable: 'COSIGN_PASSWORD')
-//                 ]) {
-//                     // Cosign automatically uses the COSIGN_PASSWORD environment variable to decrypt the key
-//                     sh 'cosign sign --key $COSIGN_KEY $IMAGE_NAME:$IMAGE_TAG'
-//                 }
-//             }
-//         }
+        stage('Cosign Image Signing') {
+            steps {
+                echo "Signing the pushed OCI image using Cosign..."
+                // secure retrieval of the private key file and passphrase from Jenkins credentials provider
+                withCredentials([
+                    file(credentialsId: 'cosign-private-key', variable: 'COSIGN_KEY'),
+                    string(credentialsId: 'cosign-passphrase', variable: 'COSIGN_PASSWORD')
+                ]) {
+                    // Cosign automatically uses the COSIGN_PASSWORD environment variable to decrypt the key
+                    sh 'cosign sign --key $COSIGN_KEY $IMAGE_NAME:$IMAGE_TAG'
+                }
+            }
+        }
 
 //         stage("Deploy Docker containers To Production"){
 //             input {
