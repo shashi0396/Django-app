@@ -115,3 +115,38 @@ minikube image load 047719618727.dkr.ecr.us-east-1.amazonaws.com/django-cicd-dem
 
 ## License & Contact
 This project is provided as-is for demo and learning purposes. For questions, open an issue or contact the maintainer.
+
+
+
+sqa_301f35b8752ae61fe14f641c320fed0422e0fadf
+
+
+docker run \
+  --rm \
+  --network host \
+  -e SONAR_HOST_URL="http://3.87.13.139:9000" \
+  -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=java-app -Dsonar.java.binaries=target/classes" \
+  -e SONAR_TOKEN="sqa_301f35b8752ae61fe14f641c320fed0422e0fadf" \
+  -v "$(pwd):/usr/src" \
+  sonarsource/sonar-scanner-cli
+
+SHARED-LIBRARIES -JENKINS
+
+
+docker run -t --rm \
+  -v $(pwd):/zap/wrk/:rw \
+  ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+  -t http://54.210.30.47:3000 \
+  -r zap_report.html
+
+docker run -t --rm
+-v $(pwd):/zap/wrk/:rw
+ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py
+-t http://YOUR_BACKEND_IP:8080/v3/swagger
+-f swagger.json
+
+docker run -t --rm \
+  -v $(pwd):/zap/wrk/:rw \
+  ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+  -t http://54.210.30.47:8081 \
+  -r zap_report.html

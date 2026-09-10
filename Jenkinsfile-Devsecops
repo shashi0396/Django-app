@@ -6,7 +6,10 @@ pipeline {
         IMAGE_TAG = "latest"
         CONTAINER_NAME = "microdegree-container"
         PORT = "8000"
-        APP_URL = "http://3.85.113.198:8000/hello/"
+        APP_URL = "http://54.204.182.229:8000/hello/"
+        SONARQUBE_URL = "http://54.204.182.229:9000/"
+        // SONAR_TOKEN = credentials('sonar-token')
+        PROJECT_KEY = "Django-app"
     }
 
     stages {
@@ -24,6 +27,13 @@ pipeline {
             }
         }
 
+        // stage('maven-compile') {
+        //     steps {
+        //         echo "Compiling the Maven project..."
+        //         sh "mvn clean compile"
+        //     }
+        // }
+
         stage('SonarQube Analysis') {
             // when branch {"feature/*"}
             steps {
@@ -37,15 +47,7 @@ pipeline {
                     }
                 }
             }
-        }
-
-//         // stage('Quality Gate') {
-//         //     steps {
-//         //         timeout(time: 2, unit: 'MINUTES') {
-//         //             waitForQualityGate abortPipeline: false
-//         //         }
-//         //     }
-//         // }
+        }        
 
         stage("Build Docker image"){
             steps {
@@ -112,27 +114,26 @@ pipeline {
             }
         }
 
-//         stage("DAST with OWASP ZAP") {
-//             steps {
-//                 echo "Running OWASP ZAP Dynamic Application Security Testing..."
-//                 sh '''
+        stage("DAST with OWASP ZAP") {
+            steps {
+                echo "Running OWASP ZAP Dynamic Application Security Testing..."
+                sh '''
 
-//                     mkdir -p zap_reports
-//                     chmod 777 zap_reports
+                    mkdir -p zap_reports
+                    chmod 777 zap_reports
 
-//                     docker run --rm -v $(pwd)/zap_reports:/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-//                     -t $APP_URL \
-//                     -r zap_report.html \
-//                     || true
-//                 '''
-//             }
-//             post {
-//                 always {
-//                     // Archive the DAST HTML report so it can be viewed in the Jenkins UI
-//                     archiveArtifacts artifacts: 'zap_reports/zap_report.html', allowEmptyArchive: true
-//                 }
-//             }
-//         }
-    // }
-}
+                    docker run --rm -v $(pwd)/zap_reports:/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+                    -t $APP_URL \
+                    -r zap_report.html \
+                    || true
+                '''
+            }
+            post {
+                always {
+                    // Archive the DAST HTML report so it can be viewed in the Jenkins UI
+                    archiveArtifacts artifacts: 'zap_reports/zap_report.html', allowEmptyArchive: true
+                }
+            }
+        }
+    }
 }
